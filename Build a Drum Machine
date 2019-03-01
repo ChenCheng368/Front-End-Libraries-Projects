@@ -1,2 +1,210 @@
 //debugging notes
 //name if react component, first letter must be capital case.
+
+//----------------------------HTML-------------------------------
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
+
+<div id="app"></div>
+
+
+//----------------------------CSS---------------------------------
+.container{
+  width: 40%;
+  height:50%;
+  //top:50px
+  margin: 20px;
+  outline: 5px solid orange;
+  background-color: lighten(grey, 30%);
+  //justify-self: center;
+//justify-items: center;
+}
+
+#drum-container{
+  display: grid;
+  width:400px;
+  //height:50%; 
+  //grid-column-gap: 0px;
+  //grid-row-gap: 0px;
+  grid-template-columns: auto auto auto;
+  //grid-template-rows: auto auto auto;
+  outline: 3px solid green;
+}
+#control-container{
+  //top: 5px;
+  //right: 10px;
+  
+  background-color:red;
+ // grid-row: 2;
+ // grid-column: 2 / 3;
+//display: inline-block;
+    //margin: 0px 0px 0 400px;
+    //vertical-align: top;
+  outline: 3px solid yellow;
+}
+.drum-pad{
+  font-size: 30px;
+  margin: 20px;
+  cursor: pointer;
+  text-align: center;
+  //border-radius: 5px;
+  //margin-top: 20px;
+  //margin-right: 20px;
+  float: left;
+  //padding-top: 35px;
+//box-sizing: border-box;
+  outline: 3px solid blue;
+}
+
+
+
+//---------------------------------reactJs---------------------------------------
+const bankOne=[
+  {
+    keyName:'Q',
+    keyCode:81,
+    clipName:'Heater-1',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Heater-1.mp3'
+  },
+  {
+    keyName:'W',
+    keyCode:87,
+    clipName:'Heater-2',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Heater-2.mp3'
+  }
+  ,
+  {
+    keyName:'E',
+    keyCode:69,
+    clipName:'Heater-3',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Heater-3.mp3'
+  }
+  ,
+  {
+    keyName:'A',
+    keyCode:65,
+    clipName:'Heater-4',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Heater-4_1.mp3'
+  }
+  ,
+  {
+    keyName:'S',
+    keyCode:83,
+    clipName:'Clap',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Heater-6.mp3'
+  }
+  ,
+  {
+    keyName:'D',
+    keyCode:68,
+    clipName:'Open-HH',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Dsc_Oh.mp3'
+  }
+  ,
+  {
+    keyName:'Z',
+    keyCode:90,
+    clipName:"Kick-n'-Hat",
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Kick_n_Hat.mp3'
+  }
+  ,
+  {
+    keyName:'X',
+    keyCode:88,
+    clipName:'Kick',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/RP4_KICK_1.mp3'
+  }
+  ,
+  {
+    keyName:'C',
+    keyCode:67,
+    clipName:'Closed-HH',
+    src:'https://s3.amazonaws.com/freecodecamp/drums/Cev_H2.mp3'
+  }
+]
+
+class DrumPad extends React.Component{//props contain all elems in 1 object in array
+  constructor(props) {
+    super(props);
+    
+  this.playSound = this.playSound.bind(this);
+  this.handleKeyPress =this.handleKeyPress.bind(this);
+  }
+
+//press key to play sound
+  componentDidMount() {
+    document.addEventListener('keydown', this.handleKeyPress);
+  }
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyPress);
+  }
+  handleKeyPress(e) {
+    if (e.keyCode === this.props.keyCode) {
+      this.playSound();
+    }
+  }
+  
+//click button to play sound
+playSound() { 
+    const sound = document.getElementById(this.props.keyName);
+    sound.play();
+   
+  this.props.updateDisplayedName(this.props.clipName);
+  }
+  
+  render(){
+    return(        
+        <div className="drum-pad" id={this.props.clipName} onClick={this.playSound}>{this.props.keyName}
+        <audio className='clip' id={this.props.keyName} src={this.props.src}></audio>
+        </div>
+    );
+  }
+}
+
+class DrumMachine extends React.Component {
+  constructor (props) {
+    super(props);
+    this.state = {
+      bank: bankOne,
+      displayedName:"NULL"
+    };
+    
+    this.setDisplayedName=this.setDisplayedName.bind(this);
+  }
+  
+  setDisplayedName(name){
+    this.setState(
+    {
+      displayedName:name
+    });
+    
+  }
+  
+  render () {
+    let padBank=this.state.bank.map ( (obj)=>{
+      return (    
+          <DrumPad keyName={obj.keyName} keyCode={obj.keyCode} clipName={obj.clipName} src={obj.src} updateDisplayedName={this.setDisplayedName}/>  
+    )    
+    });       
+                                     
+    return (
+    <div id="drum-machine">
+      <div id="display" class="container" >
+        
+        <div id='drum-container'> 
+          {padBank}
+        </div>
+        
+        <div id='control-container' style={{color: "blue", fontSize: 26}}>
+          {this.state.displayedName}
+        </div>
+        
+        
+      </div>           
+   </div>
+    )
+  }
+    
+}
+
+ReactDOM.render(<DrumMachine />, document.getElementById("app"));

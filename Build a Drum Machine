@@ -304,7 +304,6 @@ displayedName:""
           {this.state.displayedName}  
         </div>
         
-        <p>Bank: {this.state.bank}</p>
         
       </div>           
    </div>

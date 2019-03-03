@@ -13,12 +13,51 @@
   width: 40%;
   height:50%;
   //top:50px
-  margin: 20px;
-  outline: 5px solid orange;
+  margin: 20px;  
   background-color: lighten(grey, 30%);
+  //position: relative;//?
+  outline: 5px solid orange;
   //justify-self: center;
 //justify-items: center;
 }
+
+.drum-container{
+  display: inline-block;
+  width:50%;
+  //outline: 3px solid blue;
+}
+
+.control-container{
+  display: inline-block;
+  width:40%;
+  vertical-align: top;
+  margin: 0px 0px 0 30px;
+ // outline: 5px solid blue;
+}
+
+.drum-pad{
+  font-size: 30px;
+  margin: 20px 0px 0px 20px;
+  cursor: pointer;
+  text-align: center;
+  width: 60px;
+  height: 40px;
+  border-radius: 5px;
+  background-color:gray;
+  //box-shadow: 3px 3px 5px black;
+}
+
+#pad-bank{
+  display: grid;
+  width:80%;
+  height:230px; 
+  //grid-column-gap: 0px;
+  //grid-row-gap: 0px;
+  grid-template-columns: auto auto auto;
+  //grid-template-rows: auto auto auto;
+  //outline: 3px solid green;
+}
+
 .power-select-box{
   margin: 10px 0px 10px 10px;
   border: 1px solid black;
@@ -37,17 +76,29 @@
   cursor: pointer;
 }
 
-#drum-container{
-  display: grid;
-  width:400px;
-  //height:50%; 
-  //grid-column-gap: 0px;
-  //grid-row-gap: 0px;
-  grid-template-columns: auto auto auto;
-  //grid-template-rows: auto auto auto;
-  outline: 3px solid green;
+.bank-select-box{
+  margin: 10px 0px 10px 10px;
+  border: 1px solid black;
+  width: 50px;
+  height: 20px;
+  padding: 1px;
+  background-color: black;
 }
-#control-container{
+
+.bank-select-box-inner{
+  width: 23px;
+  height: 19px;
+  background: #8cc120;
+  border: 1px solid black;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+
+
+
+
+#displayed{
   //top: 5px;
   //right: 10px;
   margin: 10px 0px 10px 10px;
@@ -61,19 +112,6 @@
     //margin: 0px 0px 0 400px;
     //vertical-align: top;
   //outline: 3px solid yellow;
-}
-.drum-pad{
-  font-size: 30px;
-  margin: 20px;
-  cursor: pointer;
-  text-align: center;
-  //border-radius: 5px;
-  //margin-top: 20px;
-  //margin-right: 20px;
-  float: left;
-  //padding-top: 35px;
-//box-sizing: border-box;
-  outline: 3px solid blue;
 }
 
 
@@ -160,7 +198,7 @@ const bankTwo = [{
   src: 'https://s3.amazonaws.com/freecodecamp/drums/Chord_3.mp3'
 }, {
   keyCode: 65,
-  keyTrigger: 'A',
+  keyName: 'A',
   clipName: 'Shaker',
   src: 'https://s3.amazonaws.com/freecodecamp/drums/Give_us_a_light.mp3'
 }, {
@@ -193,9 +231,13 @@ const bankTwo = [{
 class DrumPad extends React.Component{//props contain all elems in 1 object in array
   constructor(props) {
     super(props);
-    
+    this.state = {
+      padStyle:{boxShadow: "3px 3px 5px black"}
+    };
   this.playSound = this.playSound.bind(this);
   this.handleKeyPress =this.handleKeyPress.bind(this);
+    this.setActivePad=this.setActivePad.bind(this);
+    this.setInactivePad=this.setInactivePad.bind(this);
   }
 
 //press key to play sound
@@ -211,18 +253,35 @@ class DrumPad extends React.Component{//props contain all elems in 1 object in a
     }
   }
   
+  setActivePad(){
+    this.setState(
+    {
+      padStyle: {boxShadow: "0 0 black"}
+    });
+  }
+  setInactivePad(){
+    this.setState(
+    {
+      padStyle:{boxShadow: "3px 3px 5px black"}
+    });
+  }
 //click button to play sound
 playSound() { 
-    const sound = document.getElementById(this.props.keyName);
-    sound.play();
-   
+   const sound = document.getElementById(this.props.keyName);
+   sound.play();
+   sound.volume = this.props.volumeVal;
+  
+  //update pad style
+  this.setActivePad();
+  setTimeout(() => this.setInactivePad(), 200);
+  
   this.props.updateDisplayedName(this.props.clipName);
   }
   
   render(){
     if(this.props.power==='on'){
         return(      
-            <div className="drum-pad" id={this.props.clipName} onClick={this.playSound}>{this.props.keyName}
+            <div className="drum-pad" style={this.state.padStyle} id={this.props.clipName} onClick={this.playSound}>{this.props.keyName}
             <audio className='clip' id={this.props.keyName} src={this.props.src}></audio>
             </div>  
         );    
@@ -230,7 +289,7 @@ playSound() {
     
     else{
       return(      
-            <div className="drum-pad" id={this.props.clipName}>
+            <div className="drum-pad" style={this.state.padStyle} id={this.props.clipName}>
                 {this.props.keyName}
             </div>  
         );  
@@ -246,10 +305,13 @@ class DrumMachine extends React.Component {
       bank: bankOne,
       displayedName:"",
       power:"on",
+      volumeVal:0.3
     };
     
     this.setDisplayedName=this.setDisplayedName.bind(this);
     this.controlPower=this.controlPower.bind(this);
+    this.controlBank=this.controlBank.bind(this);
+    this.changeVolume=this.changeVolume.bind(this);
   }
   
   setDisplayedName(name){
@@ -278,12 +340,37 @@ displayedName:""
     }
   }
   
+  controlBank(){
+    if(this.state.bank==bankOne){
+      this.setState(
+      {
+        bank:bankTwo
+      });
+    }
+    
+    else{
+      this.setState(
+      {
+        bank:bankOne
+      });
+    }
+  }
+  
+  changeVolume(e){
+    this.setState({
+      volumeVal: e.target.value
+    });
+    
+  }
+  
   render () {
     const powerStyle= this.state.power==='on'? {float: 'right'}:{float: 'left'};
+    const bankStyle= this.state.bank==bankOne? {float: 'left'}:{float: 'right'};
+    const bankLabel= this.state.bank==bankOne? 'bank 1':'bank 2';
     
     let padBank=this.state.bank.map ( (obj)=>{
       return (    
-          <DrumPad keyName={obj.keyName} keyCode={obj.keyCode} clipName={obj.clipName} src={obj.src} updateDisplayedName={this.setDisplayedName} power={this.state.power} />  
+          <DrumPad keyName={obj.keyName} keyCode={obj.keyCode} clipName={obj.clipName} src={obj.src} updateDisplayedName={this.setDisplayedName} power={this.state.power} volumeVal={this.state.volumeVal}/>  
     )    
     });       
                                      
@@ -291,19 +378,31 @@ displayedName:""
     <div id="drum-machine">
       <div id="display" class="container" >
         
-        <div id='drum-container'> 
-          {padBank}
+        <div className='drum-container'>
+          <div id='pad-bank'> 
+            {padBank}
+          </div>
         </div>
              
-        <p>Power: {this.state.power}</p>
-        <div onClick={this.controlPower} className="power-select-box">
-        <div style={powerStyle} className="power-select-box-inner" />
+        <div className='control-container'>
+          <p>Power: {this.state.power}</p>
+          <div onClick={this.controlPower} className="power-select-box">
+              <div style={powerStyle} className="power-select-box-inner" />
+          </div>
+
+          <div id='displayed' style={{color: "blue", fontSize: 26}}>
+            {this.state.displayedName}  
+          </div>
+
+          <div className="volume-slider">
+              <input type="range" min="0" max="1" step="0.01" value={this.state.volumeVal} onChange={this.changeVolume} />
+          </div>
+
+          <p>Bank: {bankLabel}</p>
+          <div onClick={this.controlBank} className="bank-select-box">
+          <div style={bankStyle} className="bank-select-box-inner" />
+          </div>
         </div>
-        
-        <div id='control-container' style={{color: "blue", fontSize: 26}}>
-          {this.state.displayedName}  
-        </div>
-        
         
       </div>           
    </div>

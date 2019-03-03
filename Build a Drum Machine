@@ -16,7 +16,7 @@
   margin: 20px;  
   background-color: lighten(grey, 30%);
   //position: relative;//?
-  outline: 5px solid orange;
+  outline: 5px solid gray;
   //justify-self: center;
 //justify-items: center;
 }

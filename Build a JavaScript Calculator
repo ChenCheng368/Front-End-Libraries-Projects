@@ -1,0 +1,342 @@
+//---------------------HTML----------------------------------
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
+<div id='app'></div>
+
+//-------------------------CSS-----------------------------------------
+$padWidth: 50px;
+$padHeight: 50px;
+$space:5px;
+
+button{
+  color:white;
+  font-size: 25px;
+  text-align: center;
+  position: relative;
+  margin: $space $space $space $space;
+  width: $padWidth;
+  height: $padHeight;
+  background-color: darken(grey, 30%);;
+  border: none;
+  border-radius: 50%;
+  //outline: 1px solid black;
+
+  &:hover {
+    color: black;
+    //outline: 1px solid grey;
+    //outline-radius: 50%;
+    z-index: 3;
+  }
+}
+
+.wide-button{
+  width:$padWidth*2+$space*2;
+  border-radius: 30px;
+}
+
+.calculator{
+  outline: 5px solid gray;
+  background-color:black;
+  width:$padWidth*4+$space*8;
+  //position: relative;
+  padding: 5px; 
+}
+
+.output{
+  color:white;
+  font-size: 30px;
+  text-align: right;
+  width: $padWidth*4+$space*6;
+  height: $padHeight;
+  //background-color: grey;
+}
+
+.formula{
+  color:orange;
+  font-size: 20px;
+  text-align: right;
+  width: $padWidth*4+$space*6;
+  height: $padHeight/2;
+  //background-color: grey;
+}
+
+
+
+.pad-container{
+  //outline: 1px solid black;
+  color:white;
+  font-size: 30px;
+  text-align: center;
+  
+  .number-pad{   
+    //display: inline-block;
+    position: relative;
+    margin: 10px 5px 16px 5px;
+    
+    outline: 1px solid black;
+    width: $padWidth;
+    height: $padHeight;
+    background-color: darken(grey, 20%);;
+  }
+  .number-pad:hover {
+    border:1px solid white;
+  }
+
+  .equal-pad{
+    outline: 1px solid black;
+    width: $padWidth;
+    height: $padHeight*2;
+    background-color: darken(blue, 30%);
+  }
+  .equal-pad:hover {
+    border:1px solid white;
+  }
+
+  .operator-pad{
+    outline: 1px solid black;
+    width: $padWidth;
+    height: $padHeight;
+    background-color: lighten(grey, 20%);
+  }
+  .operator-pad:hover {
+    border:1px solid white;
+  }
+  .AC-pad{
+    outline: 1px solid black;
+    width: $padWidth*2;
+    height: $padHeight;
+    background-color: darken(red, 30%);
+  }
+  .AC-pad:hover {
+    border:1px solid white;
+  }    
+}
+
+
+//-----------------------------------JS------------------------------------------
+const numberBank=[
+  {
+    number:0,
+    numberID:'zero'
+  },
+  {
+    number:1,
+    numberID:'one'
+  },
+  {
+    number:2,
+    numberID:'two'
+  },
+  {
+    number:3,
+    numberID:'three'
+  },
+  {
+    number:4,
+    numberID:'four'
+  },
+  {
+    number:5,
+    numberID:'five'
+  },
+  {
+    number:6,
+    numberID:'six'
+  },
+  {
+    number:7,
+    numberID:'seven'
+  },
+  {
+    number:8,
+    numberID:'eight'
+  },
+  {
+    number:9,
+    numberID:'nine'
+  }
+];
+
+const clearStyle={backgroundColor:"#666666"};
+const operatorStyle={backgroundColor:"orange"};
+
+
+class ButtonPanel extends React.Component{
+  constructor(props) {
+    super(props);
+  }
+  
+  render(){
+    return(
+      <div>
+        <button id="clear" style={clearStyle} onClick={this.props.handleClearClick}>C</button>
+        <button id="sign" style={clearStyle} onClick={this.props.handleSignClick}>+/-</button>
+        <button id="percent" style={clearStyle} onClick={this.props.handlePercentClick}>%</button>
+        <button id="divide" value='/' style={operatorStyle} onClick={this.props.handleOperatorClick}>÷</button>
+        
+        <button id="seven" value='7'  onClick={this.props.handleNumClick}>7</button>
+        <button id="eight" value='8'  onClick={this.props.handleNumClick}>8</button>
+        <button id="nine" value='9'  onClick={this.props.handleNumClick}>9</button>
+        <button id="multiply" value='*' style={operatorStyle} onClick={this.props.handleOperatorClick}>x</button>
+        
+        <button id="four" value='4'  onClick={this.props.handleNumClick}>4</button>
+        <button id="five" value='5'  onClick={this.props.handleNumClick}>5</button>
+        <button id="six" value='6'  onClick={this.props.handleNumClick}>6</button>
+        <button id="subtract" value='-' style={operatorStyle} onClick={this.props.handleOperatorClick}>-</button>
+        
+        <button id="one" value='1' onClick={this.props.handleNumClick}>1</button>
+        <button id="two" value='2' onClick={this.props.handleNumClick}>2</button>
+        <button id="three" value='3'  onClick={this.props.handleNumClick}>3</button>
+        <button id="add" value='+' style={operatorStyle} onClick={this.props.handleOperatorClick}>+</button>
+        
+        <button id="zero" value='0' className="wide-button"  onClick={this.props.handleNumClick}>0</button>
+        <button id="decimal" value='.'  onClick={this.props.handleNumClick}>.</button>
+        <button id="equals" style={operatorStyle} onClick={this.props.handleEvaluate}>=</button>
+      </div>
+    )   
+  }
+}
+
+class Formula extends React.Component{
+  constructor(props) {
+    super(props);
+  }
+  
+  render(){
+    return(
+      <div className='formula'>{this.props.formula}</div>
+    )
+  }
+}
+
+class Output extends React.Component{
+  constructor(props) {
+    super(props);
+  }
+  
+  render(){
+    return(
+      <div className='output' id="display">{this.props.currVal}</div>
+    )
+  }
+}
+
+class Calculator extends React.Component{
+  constructor(props) {
+    super(props);
+    this.state={
+      currVal:"0",
+      formula:"",
+      newNumber:true
+    };
+    this.handleNumClick=this.handleNumClick.bind(this);
+    this.handleClearClick=this.handleClearClick.bind(this);
+    this.handleOperatorClick=this.handleOperatorClick.bind(this);
+    this.handleEvaluate=this.handleEvaluate.bind(this); 
+    this.handleSignClick=this.handleSignClick.bind(this); 
+    this.handlePercentClick=this.handlePercentClick.bind(this);
+  }
+  
+  handleNumClick(e){  
+    if(this.state.newNumber===true){
+      this.setState(
+        {
+          currVal: e.target.value,
+          newNumber:false,
+          formula: this.state.formula+e.target.value
+        });
+    }
+    else{//not a new number     
+      this.setState(
+        {
+          currVal: this.state.currVal=="0"? e.target.value : this.state.currVal+e.target.value,
+          formula: this.state.currVal=="0"? e.target.value : this.state.formula+e.target.value
+        }); 
+      
+      //handle multiple "."
+      if(this.state.currVal.includes(".")&& e.target.value=="."){
+        this.setState(
+        {
+          currVal:this.state.currVal,//do nothing
+          formula:this.state.formula
+        });
+      }//end if
+    
+    }//end else
+  }
+  
+  
+  handleClearClick(){  
+    this.setState(
+      {
+        currVal:"0",
+        formula:"",
+        newNumber:true
+      }); 
+  }
+
+  handleOperatorClick(e){   
+        this.setState(
+      {
+        currVal: e.target.value,
+        newNumber:true,
+        formula: e.target.value==this.state.currVal? this.state.formula : /\d$/.test(this.state.formula) ? this.state.formula+e.target.value : this.state.formula.slice(0,-1)+e.target.value
+      });
+    
+  }
+  
+  handleEvaluate(){
+    const result=String(eval(this.state.formula));//result should convert to a string
+    this.setState(
+      {
+        currVal: result,
+        newNumber:true,
+        formula: result
+      });
+    
+  }
+  
+  handleSignClick(){
+    const invSign=this.state.currVal.slice(1);
+    this.setState(
+      {
+        currVal: /^\-/.test(this.state.currVal)? invSign : "-"+this.state.currVal,
+        formula: /^\-/.test(this.state.currVal)? 
+                 this.state.formula.slice(0,-(this.state.currVal.length))+invSign : 
+                 this.state.formula.slice(0,-(this.state.currVal.length))+"-"+this.state.currVal
+      });
+    
+  }
+  
+  handlePercentClick(){
+    const result=String(this.state.currVal/100);
+    console.log(result);
+    
+    this.setState(
+      {
+        currVal: result,
+        formula: this.state.formula.slice(0,-(this.state.currVal.length))+result
+      });
+    
+  }
+  
+  render(){                                    
+    return(
+      <div className='calculator'>
+        <Formula formula={this.state.formula}/>
+        <Output currVal={this.state.currVal}/>
+        <ButtonPanel handleNumClick={this.handleNumClick}
+                     handleClearClick={this.handleClearClick} 
+                     handleOperatorClick={this.handleOperatorClick}
+                     handleEvaluate={this.handleEvaluate}
+                     handleSignClick={this.handleSignClick}
+                     handlePercentClick={this.handlePercentClick}
+          />
+      </div>
+        
+    )   
+  }
+}
+
+ReactDOM.render(<Calculator />, document.getElementById("app"));
+
